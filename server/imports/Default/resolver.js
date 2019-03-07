@@ -1,8 +1,11 @@
 const { GraphQLUpload } = require('graphql-upload');
+const { GraphQLScalarType } = require('graphql');
+const { Kind } = require('graphql/language');
 
 const Default = {
   Query: {
-    holaMundo: () => "Hola Mundo"
+    holaMundo: () => "Hola Mundo",
+    fecha: () => new Date()
   },
   Mutation:{
     iniciarBaseDeDatos: async (parent, args , context , info ) => {
@@ -15,7 +18,6 @@ const Default = {
       return 'agregar mensaje se completo'
     }
   },
-  Upload: GraphQLUpload,
   Subscription: {
     addedMessage: {
       subscribe: (parent, args , context , info) => {
@@ -23,6 +25,23 @@ const Default = {
       }
     }
   },
+  Upload: GraphQLUpload,
+  Date: new GraphQLScalarType({
+    name: 'Date',
+    description: 'Date custom scalar type',
+    parseValue(value) {
+      return new Date(value); // value from the client
+    },
+    serialize(value) {
+      return value.getTime(); // value sent to the client
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.INT) {
+        return new Date(ast.value) // ast value is always in string format
+      }
+      return null;
+    },
+  }),
   Response: {
     __resolveType(obj, context , info) {
       return null;
